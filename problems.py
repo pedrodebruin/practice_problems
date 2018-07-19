@@ -12,15 +12,6 @@ Then, the output should be:
 Hints:
 In case of input data being supplied to the question, it should be assumed to be a console input.
 
-
-def fact(x):
-
-    if x==0:
-        return 1
-    else:
-        return x*fact(x-1)
-
-
 Solution:
 def fact(x):
     if x == 0:
@@ -48,12 +39,19 @@ In case of input data being supplied to the question, it should be assumed to be
 Consider use dict()
 
 Solution:
-n=int(raw_input())
-d=dict()
-for i in range(1,n+1):
-    d[i]=i*i
+def dict_sq(n):
 
-print d
+	dict_n = {}
+	for i in range(1,n+1):
+		dict_n[i] = i*i
+
+        return dict_n
+
+
+n = int(raw_input())
+print("Generating dictionary from 1 to {}".format(n))
+dict_obj = dict_sq(n)
+print(dict_obj)
 #----------------------------------------#
 
 
@@ -132,30 +130,32 @@ Hints:
 If the output received is in decimal form, it should be rounded off to its nearest value (for example, if the output received is 26.0, it should be printed as 26)
 In case of input data being supplied to the question, it should be assumed to be a console input. 
 
-Solution:
-#!/usr/bin/env python
+
 import math
-c=50
-h=30
-value = []
-items=[x for x in raw_input().split(',')]
-for d in items:
-    value.append(str(int(round(math.sqrt(2*c*float(d)/h)))))
 
-print ','.join(value)
+def formula(C,D,H):
+	return int(round(math.sqrt(2*C*D/H)))
+
+def func(list_D):
+
+	return [ formula(50, D, 30) for D in list_D ]
+
+
+print("Please enter a comma-separated list of numbers")
+list_n = raw_input()
+list_n = list_n.split(',')
+list_n = [ float(x) for x in list_n ]
+print(func(list_n))
+
 #----------------------------------------#
-
 
 def findIndex(A,x):
 
     l,h = findRange(A,x)
-
     i = l
     while x > A[i]:
         i=i+1
-
     return i-1
-
 
 def findRange(A,x):
     l = 0
@@ -165,21 +165,154 @@ def findRange(A,x):
         l = h
         h = min(2*h,len(A)-1)
         print l,h
-
     return l,h
 
 
 def main():
-
     A = [1,2,3,4,5,6,7,10,15,20,25,27,30,36,450]
     x = 45
-
     i=0
     i = findIndex(A,x)
-
     print("Nearest position of x is index {0} with value {1}".format(i, A[i]))
 
 
 if __name__=="__main__":
     main()
 
+#--------------------------------------------#
+
+
+def find_attributes(request, dataset):
+	    """
+	    Takes in a dictionary {string: string} representing strings to search for in the input dataset and the attribute
+	    to report for each.  Should output a dictionary of each requested element mapped to it's requested
+	    attribute.
+
+	    :param request:  {string: string} dictionary mapping from a requested search string to a requested attribute.
+	    Search string can be anything while attribute will be one of:
+		"first_idx": we want to output the index of the first instance of this element in the dataset
+		"last_idx": we want to output the index of the final instance of this element in the dataset
+		"count": we want the count of total occurrences of this element in the dataset
+	    e.g. we might get a request like: {"apple": "first_idx", "orange": "last_idx", "pear": "count", ...}
+
+	    :param dataset:  [string]  a simple list of strings, possibly including duplicates
+	    e.g. ["orange", "apple", "orange", "pear", "avocado", "pear", "apple"]
+
+	    :return: dictionary mapping each requested string to the requested (int) attribute, indices as None if no instances
+	    """
+
+	    # implement code here
+
+	    out_dict = {}
+            rev_dataset = [ dataset[-n] for n in range(1,len(dataset)+1) ]
+
+	    for k,v in request.items():
+		if v=="first_idx":
+		    out_dict[k] = dataset.index(k)
+		else if v=="last_idx":
+		    out_dict[k] = rev_dataset.index(k)
+		else if v=="count":
+                    out_dict[k] = Counter(dataset.keys())
+		else:
+		    raise("The request '{}:{}'is not understood".format(k,v))
+
+	    return out_dict
+
+
+
+# SAMPLE TEST CASE
+sample_request = {"apple": "first_idx", "orange": "last_idx", "pear": "count", "avocado": "first_idx"}
+sample_dataset = ["orange", "apple", "orange", "pear", "avocado", "pear", "apple"]
+sample_expected_output = {"apple": 1, "orange": 2, "pear": 2, "avocado": 4}
+assert find_attributes(sample_request, sample_dataset) == sample_expected_output
+
+
+### PROVIDED SOLUTION BELOW, MY SOLUTION ABOVE ###
+#---------------------------------------------------------#
+
+def find_attributes_naive(request, dataset):
+    """
+    Takes in a dictionary {string: string} representing strings to search for in the input dataset and the attribute
+    to report for each.  Should output a dictionary of each requested element mapped to it's requested
+    attribute.
+
+    :param request:  {string: string} dictionary mapping from a requested search string to a requested attribute.
+    Search string can be anything while attribute will be one of:
+        "first_idx": we want to output the index of the first instance of this element in the dataset
+        "last_idx": we want to output the index of the final instance of this element in the dataset
+        "count": we want the count of total occurrences of this element in the dataset
+    e.g. we might get a request like: {"apple": "first_idx", "orange": "last_idx", "pear": "count", ...}
+
+    :param dataset:  [string]  a simple list of strings, possibly including duplicates
+    e.g. ["orange", "apple", "orange", "pear", "avocado", "pear", "apple"]
+
+    :return: dictionary mapping each requested string to the requested (int) attribute, indices as None if no instances
+    """
+
+    # naive solution
+    output = {elem: 0 if attr is "count" else None for elem, attr in request.items()}
+    for search_str, attr in request.items():
+        if attr == "first_idx":
+            for idx, elem in enumerate(dataset):
+                if elem == search_str:
+                    output[search_str] = idx
+                    break
+        elif attr == "last_idx":
+            for idx, elem in enumerate(reversed(dataset)):
+                if elem == search_str:
+                    output[search_str] = len(dataset) - 1 - idx
+                    break
+        else:
+            for idx, elem in enumerate(dataset):
+                if elem == search_str:
+                    output[search_str] += 1
+    return dict(output)
+
+
+def find_attributes_one_pass(request, dataset):
+    """
+    Takes in a dictionary {string: string} representing strings to search for in the input dataset and the attribute
+    to report for each.  Should output a dictionary of each requested element mapped to it's requested
+    attribute.
+
+    :param request:  {string: string} dictionary mapping from a requested search string to a requested attribute.
+    Search string can be anything while attribute will be one of:
+        "first_idx": we want to output the index of the first instance of this element in the dataset
+        "last_idx": we want to output the index of the final instance of this element in the dataset
+        "count": we want the count of total occurrences of this element in the dataset
+    e.g. we might get a request like: {"apple": "first_idx", "orange": "last_idx", "pear": "count", ...}
+
+    :param dataset:  [string]  a simple list of strings, possibly including duplicates
+    e.g. ["orange", "apple", "orange", "pear", "avocado", "pear", "apple"]
+
+    :return: dictionary mapping each requested string to the requested (int) attribute, indices as None if no instances
+    """
+
+    # single pass solution
+    output = {elem: 0 if attr is "count" else None for elem, attr in request.items()}
+    for idx, elem in enumerate(dataset):
+        if elem in request:
+            if request[elem] == "count":
+                # just add to the count
+                output[elem] += 1
+            elif request[elem] == "last_idx":
+                # overwrite any previous index so we end up with final index
+                output[elem] = idx
+            else:
+                # first_idx case, set if not already set
+                if output[elem] is None:
+                    output[elem] = idx
+    return output
+
+
+# SAMPLE TEST CASE
+sample_request = {
+    "apple": "first_idx",
+    "orange": "last_idx",
+    "pear": "count",
+    "avocado": "first_idx"
+}
+sample_dataset = ["orange", "apple", "orange", "pear", "avocado", "pear", "apple"]
+sample_expected_output = {"apple": 1, "orange": 2, "pear": 2, "avocado": 4}
+assert find_attributes_naive(sample_request, sample_dataset) == sample_expected_output
+assert find_attributes_one_pass(sample_request, sample_dataset) == sample_expected_output
