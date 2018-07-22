@@ -201,20 +201,24 @@ def find_attributes(request, dataset):
 	    :return: dictionary mapping each requested string to the requested (int) attribute, indices as None if no instances
 	    """
 
-	    # implement code here
+	    
+            out_dict = {}
+            rev_dataset = reversed(dataset)
+           
+            for k,v in request.items():
 
-	    out_dict = {}
-            rev_dataset = [ dataset[-n] for n in range(1,len(dataset)+1) ]
+                if k not in dataset:
+			out_dict[k] = None
+                        continue
 
-	    for k,v in request.items():
-		if v=="first_idx":
-		    out_dict[k] = dataset.index(k)
-		else if v=="last_idx":
-		    out_dict[k] = rev_dataset.index(k)
-		else if v=="count":
-                    out_dict[k] = Counter(dataset.keys())
+		if v == "first_idx":
+			out_dict[k] = dataset.index(k)
+		elif v == "last_idx":
+			out_dict[k] = len(dataset) - rev_dataset.index(k) - 1
+		elif v == "count":
+			out_dict[k] = sum( [ y==k for y in dataset ] )
 		else:
-		    raise("The request '{}:{}'is not understood".format(k,v))
+			print("The request {} is not understood".format(v))
 
 	    return out_dict
 
